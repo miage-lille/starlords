@@ -1,0 +1,24 @@
+{
+  "name": "univers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "ligo compile contract contracts/galaxy.jsligo --output-file build/galaxy.tz && ligo compile contract contracts/galaxy.jsligo --output-file build/galaxy.json --michelson-format json",
+    "deploy": "ts-node deploy/deploy.ts ",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "@taquito/signer": "*",
+    "@taquito/taquito": "*",
+    "@taquito/utils": "*",
+    "cli-spinner": "*",
+    "dotenv": "*",
+    "ts-node": "*",
+    "typescript": "*",
+    "ansi-colors": "^4.1.3"
+  }
+}
