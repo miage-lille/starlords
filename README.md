@@ -29,7 +29,7 @@ And more...
 type storage = int;
 
 type parameter =
-  | { kind: "Increment"; payload: int }
+  { kind: "Increment"; payload: int }
   | { kind: "Decrement"; payload: int }
   | { kind: "Reset" };
 
