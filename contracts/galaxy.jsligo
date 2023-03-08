@@ -1,0 +1,73 @@
+type coordinate = [int, int, int];
+
+type planetType =
+  | { kind: "Tellurian" }
+  | { kind: "Gaseous" }
+  | { kind: "Other" };
+
+type planet = {
+  name: string;
+  price: tez;
+  coordinate: coordinate;
+  planetType: planetType;
+  density: nat;
+  lord: option<address>;
+};
+
+type storage = big_map<string, planet>;
+
+type parameter =
+  | { kind: "Discover"; payload: planet }
+  | { kind: "Claim"; payload: string };
+
+type return_ = [list<operation>, storage];
+
+const main = (action: parameter, store: storage): return_ => {
+  let next_ops = list([]);
+  switch (action.kind) {
+    case "Discover": {
+      const has_planet = Big_map.mem(action.payload.name, store);
+      if (has_planet) {
+        return failwith("Planet already discovered");
+      }
+      const new_planet = { ...action.payload, price: 1000 as mutez };
+      return [
+        next_ops,
+        Big_map.update(action.payload.name, Some(new_planet), store)
+      ];
+    }
+    case "Claim": {
+      const p_opt: option<planet> = Big_map.find_opt(action.payload, store);
+      const p = Option.unopt_with_error(p_opt, "This planet does not exist");
+      // Check that the transaction sent the price to claim
+      if (Tezos.get_amount() != p.price) {
+        return failwith("You must pay exactly the price to claim the planet");
+      }
+      else if (Option.is_some(p.lord)) {
+        const lord: address = Option.unopt(p.lord);
+        // Check that it is a new lord
+        if (lord == Tezos.get_sender()) {
+          return failwith("This planet is already yours!");
+        }      
+        // get the implicit contract for the address of the lord
+        const lord_contract: contract<unit> = Tezos.get_contract_with_error(
+          lord,
+          "Impossible case"
+        );
+        // Forge the transaction
+        const payoutOperation: operation = Tezos.transaction(
+          unit,
+          (p.price / (2 as nat) ) as tez, // https://ligolang.org/docs/language-basics/math-numbers-tez?lang=jsligo#euclidean-division
+          lord_contract
+        );
+        next_ops = list([payoutOperation]);
+      }
+      const np = {
+        ...p,
+        lord: Some(Tezos.get_sender()),
+        price: (2 as nat) * p.price,
+      };
+      return [next_ops, Big_map.update(action.payload, Some(np), store)];
+    }
+  }
+};
