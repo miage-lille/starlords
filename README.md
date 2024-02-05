@@ -4,13 +4,11 @@
 
 [LIGO](https://ligolang.org) is a strongly and statically typed language for writing [Tezos](https://tezos.com) smart contracts.
 
-LIGO currently offers three syntaxes:
+LIGO currently offers two syntaxes:
 
 - JsLIGO, a TypeScript/JavaScript inspired syntax that aims to be familiar to those coming from TypeScript/JavaScript.
 
 - CameLIGO, an OCaml inspired syntax that allows you to write in a functional style.
-
-- PascaLIGO, a syntax inspired by Pascal which provides an imperative developer experience.
 
 For this training we will use JsLIGO.
 
@@ -28,24 +26,22 @@ And more...
 ```ts
 type storage = int;
 
-type parameter =
-  { kind: "Increment"; payload: int }
-  | { kind: "Decrement"; payload: int }
-  | { kind: "Reset" };
-
 type return_ = [list<operation>, storage];
 
-let main = (action: parameter, store: storage): return_ => {
-  const noop = list([]);
-  switch (action.kind) {
-    case "Increment":
-      return [noop, store + action.payload];
-    case "Decrement":
-      return [noop, store - action.payload];
-    case "Reset":
-      return [noop, 0];
-  }
-};
+@entry
+const increment = (n: int, store: storage): return_ => {
+  return [list([]), store + n];
+}
+
+@entry
+const decrement = (n: int, store: storage): return_ => {
+  return [list([]), store - n];
+}
+
+@entry
+const reset = (_n: int, _s: storage) : return_ => {
+  return [list([]), 0];
+}
 ```
 
 This LIGO contract accepts the following LIGO expressions: Increment(n), Decrement(n) and Reset. Those serve as entrypoint identification.
@@ -53,10 +49,9 @@ This LIGO contract accepts the following LIGO expressions: Increment(n), Decreme
 A minimum LIGO contract have:
 
 - `type storage` definition
-- `type parameter` definition
-- `main function` definition
+- at least one `entrypoint function` definition tagged by `@entry`
 
-The contract storage can only be modified by activating a main function: given the state of the storage on-chain, a main function specifies how to create another state for it, depending on the contract's parameter.
+The contract storage can only be modified by entrypoints functions: given the state of the storage on-chain, each entrypoint specifies how to create another state for it, depending on the entrypoint's parameter.
 
 ## Galaxy
 
@@ -75,7 +70,7 @@ Inside [galaxy.jsligo](./contracts/galaxy.jsligo)
 
 - Create a type `coordinate` which is a triplet of `int` and reprensent (x, y, z) coordinates
 - Create a type `planet_type` which represent the type of the planet and can either be "Terrestrial", "Gaseous" or "Other"
-  - NB: there is no union type, only tagged unions in JsLIGO
+  - NB: there is no union type, use [`Variants`](https://ligolang.org/docs/variants/?lang=jsligo) in JsLIGO
 - Create a type `planet` which is defined by a `name`, `coordinate`, `planet_type`, `density` (a natural number) and a `lord` (an optional `address` that represent the owner of a planet)
 
 ### Exercice 2
@@ -90,8 +85,6 @@ From the types define previously, define a valid contract where:
     - If planet isn't in the storage, fail with "Unknown planet cannot be claimed" message
 
 > 📌 Option: you can unfold an option and providing a meaningful error with `Option.unopt_with_error(p_opt, "This planet does not exist") as planet`
-
-> 📌 Casting: you can unfold an option and providing a meaningful error with `Option.unopt_with_error(p_opt, "This planet does not exist") as planet`
 
 > 📌 Sender: you can know who sent a transaction to the contract with `Tezos.get_sender ()`
 
@@ -139,3 +132,16 @@ Modify the contract to implement the following business rules:
 - Planets have a default price of 1000 mutez
 - After claiming a planets its price double
 - Lords can "Destroy" their planets
+
+
+## Going further
+
+Congrats 🎉 ! You have deployed and interacted with your first smart contract on Tezos !
+
+### Interoperable contracts
+
+To deploy interoperable contracts, Tezos has defined some token standards (a standard is called "TZIP"): [FA1.2](https://tzip.tezosagora.org/proposal/tzip-7), [FA2](https://tzip.tezosagora.org/proposal/tzip-12), [FA.2.1](https://tzip.tezosagora.org/proposal/tzip-26/).
+
+You can find all TZIP [here](https://gitlab.com/tezos/tzip).
+
+To implement contracts based on these TZIP, there are some libraries available [here](https://packages.ligolang.org/).
