@@ -9,7 +9,7 @@
     // Append -bullseye or -buster to pin to an OS version.
     // Use -bullseye variants on local arm64/Apple Silicon.
     "args": {
-      "VARIANT": "16-bullseye"
+      "VARIANT": "18-bullseye"
     }
   },
   // Features to add to the dev container. More info: https://containers.dev/features.
@@ -22,12 +22,16 @@
   // "customizations": {},
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
-  "extensions": [
-    "esbenp.prettier-vscode",
-    "ligolang-publish.ligo-vscode",
-    "ligolang-publish.ligo-debugger-vscode"
-  ],
-  "settings": {
-    "editor.formatOnSave": true
+"customizations": {
+  "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "ligolang-publish.ligo-vscode",
+        "ligolang-publish.ligo-debugger-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true
+      }
+    }
   }
 }
